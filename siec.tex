@@ -13,27 +13,29 @@
 \usepackage{hyperref}
 \usepackage{fancyhdr}
 
+\definecolor{light-gray}{gray}{0.95}
+
 \lstset {
-language=Java,
+basicstyle=\footnotesize\ttfamily,
 captionpos=t,
 tabsize=2,
 frame=lines,
 keywordstyle=\color{blue},
 commentstyle=\color{gray},
 stringstyle=\color{red},
-numbers=left,
-numberstyle=\tiny,
-numbersep=5pt,
 breaklines=true,
 showstringspaces=false,
 basicstyle=\footnotesize,
-emph={label}
+emph={label},
+backgroundcolor=\color{light-gray}
 }
 \DeclareCaptionFont{white}{\color{white}}
 \DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox[c][0.25cm]{\textwidth}{#1#2#3}}}
 \captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
 
 \geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=2cm,rmargin=2cm,headheight=2cm,headsep=2cm,footskip=1cm}
+
+ \renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
 
@@ -43,10 +45,13 @@ emph={label}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
-\author{Bartłomiej Hyży\\Informatyka Stosowana, III rok\\WEAIiE, AGH}
-\date{13.06.2011}
+\author{Bartłomiej Hyży, Łukasz Mielczarek, Adrian Sudoł\\Informatyka Stosowana, IV rok\\WEAIiE, AGH}
+\date{30.11.2011}
 \title{Administracja sieciami lokalnymi -\\projekt sieci LAN}
 \maketitle
+
+\tableofcontents
+\pagebreak
 
 \thispagestyle{fancy}
 
@@ -58,6 +63,7 @@ Poniższy schemat przedstawia zaprojektowaną przez nas sieć lokalną. Zbudowan
     \caption{Schemat budowy sieci LAN} \label{fig:schemat} 
   \end{center}
 \end{figure}
+
 
 \section{Wstępna konfiguracja sieci}
 Pierwszym krokiem jest skonfigurowanie podstawowych ustawień routerów, switchy oraz hostów, takich jak adresy interfejsów czy sieci wirtualne.
@@ -302,6 +308,77 @@ S2(config-if)#exit
 
 
 \subsection{Konfiguracja tunelu IPv6 przez IPv4}
+Końcowym etapem wstępnej konfiguracji naszej sieci LAN jest zestawienie tunelu łączącego dwie podsieci (na schemacie: lewą i dolną) adresowane w IPv6, a prowadzącego poprzez podsieć adresowaną w IPv4. Jako uzasadnienie takiego tunelu można uznać chęć połączenia nowych podsieci zestawionych w adresacji IPv6 za pomocą istniejącej infrastruktury sieciowej IPv4.
+Tunel należy skonfigurować na obu routerach krańcowych połączenia, tj. R1 i R3.
+\begin{figure}[!htb]
+\begin{center}
+    \includegraphics[width=0.5\textwidth]{tunel.png}
+    \caption{Schemat budowanego tunelu} \label{fig:tunel} 
+\end{center}
+\end{figure}
+
+\subsubsection{Router R1}
+Konfigurację tunelu rozpoczynami od jego końca na routerze R1. W pierwszej kolejności przechodzimy do trybu konfiguracji i aktywujemy routing unicastowy IPv6:
+\begin{lstlisting}
+R1>enable
+R1#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R1(config)#ipv6 unicast-routing 
+\end{lstlisting}
+Następnie przechodzimy do konfiguracji właściwego tunelu:
+\begin{lstlisting}
+R1(config)#interface tunnel 0
+
+%LINK-5-CHANGED: Interface Tunnel0, changed state to up
+
+! skasowanie adresu IPv4 koncowki tunelu
+R1(config-if)#no ip address 
+! ustalenie adresu IPv6 koncowki tunelu
+R1(config-if)#ipv6 address fed0::1/64
+! aktywacja obslugi IPv6 dla interfejsu tunelowego
+R1(config-if)#ipv6 enable
+! ustawienie zrodla tunelowanych pakietow
+R1(config-if)#tunnel source fastEthernet 0/0
+! ustawienie celu tunelowanych pakietow - interfejs routera R3
+R1(config-if)#tunnel destination 192.1684.4.2
+! ustalenie trybu enkapsulacji pakietow IPv6 przechodzacych przez tunel
+R1(config-if)#tunnel mode ipv6ip
+R1(config-if)#exit
+
+! ustalenie statycznej sciezki routingu do podsieci routera R3 przez tunel
+R1(config)#ipv6 route fec0::0/64 fed0::2
+\end{lstlisting}
+
+\subsubsection{Router R3}
+Konfiguracja drugiego końca tunelu w routerze R3 przebiega analogicznie:
+\begin{lstlisting}
+R3>enable
+R3#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R3(config)#ipv6 unicast-routing 
+R3(config)#interface tunnel 0
+
+%LINK-5-CHANGED: Interface Tunnel0, changed state to up
+
+! skasowanie adresu IPv4 koncowki tunelu
+R3(config-if)#no ip address 
+! ustalenie adresu IPv6 koncowki tunelu
+R3(config-if)#ipv6 address fed0::2/64
+! aktywacja obslugi IPv6 dla interfejsu tunelowego
+R3(config-if)#ipv6 enable
+! ustawienie zrodla tunelowanych pakietow
+R3(config-if)#tunnel source fastEthernet 0/0
+! ustawienie celu tunelowanych pakietow - interfejs routera R3
+R3(config-if)#tunnel destination 192.1684.4.1
+! ustalenie trybu enkapsulacji pakietow IPv6 przechodzacych przez tunel
+R3(config-if)#tunnel mode ipv6ip
+R3(config-if)#exit
+
+! ustalenie statycznej sciezki routingu do podsieci routera R3 przez tunel
+R3(config)#ipv6 route fec1::0/64 fed0::1
+\end{lstlisting}
+
+
 \section{Listy ACL}
 \section{Konfiguracja routingu}
 \section{NAT}
