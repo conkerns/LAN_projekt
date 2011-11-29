@@ -221,7 +221,7 @@ Enter configuration commands, one per line.  End with CNTL/Z.
 
 Router(config)#hostname R2
 R2(config)#interface serial 1/0
-R3(config-if)#ip address 192.168.5.2 255.255.255.0
+R2(config-if)#ip address 192.168.5.2 255.255.255.0
 R2(config-if)#no shutdown 
 
 %LINK-5-CHANGED: Interface Serial1/0, changed state to up
@@ -300,6 +300,21 @@ R2(config-router)#version 2
 ! wyjscie z menu konfiguracji
 R2(config-router)#exit
 R2(config)#exit
+\end{lstlisting}
+
+Konfiguracja list ACL
+\begin{lstlisting}
+R2#conf t
+! dodatnie adresow sieci do list ACL
+R2(config)#acces-list 1 deny 192.168.1.0 0.0.0.255
+R2(config)#acces-list 2 deny 192.168.2.0 0.0.0.255
+R2(config)#acces-list 3 deny 192.168.3.0 0.0.0.255
+! uruchomienie konfiguracji interfejsu routera
+R2(config)# interface FastEthernet 0/0
+! zablokowanie komunikacji pomiedzy sieciami
+R2(config-if)#ip access-group 1 in
+R2(config-if)#ip access-group 2 in
+R2(config-if)#ip access-group 3 in
 \end{lstlisting}
 
 \subsection{Konfiguracja switchy}
