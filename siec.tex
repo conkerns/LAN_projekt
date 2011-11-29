@@ -120,8 +120,6 @@ R1(config-if)#no ip address
 ! przypisanie adresu IPv6 (brama podsieci)
 R1(config-if)#ipv6 address fec1::1/64 
 ! aktywacja obslugi IPv6 na interfejsie
-R1(config-if)#ipv6 rip enable
-! uruchomienie routingu IPv6
 R1(config-if)#ipv6 enable 
 ! uruchomienie interfejsu
 R1(config-if)#no shutdown 
@@ -135,6 +133,26 @@ R1#wr
 
 Building configuration...
 [OK]
+\end{lstlisting}
+Konfiguracja protokolu routingu OSPFv3
+\begin{lstlisting}
+! wejscie do menu konfiguracji
+R1#conf t
+! wejscie do menu konfiguracji protokolu ospfv3
+R1(config)#router ospfv3 1 
+! wejscie do konfiguracji sieci IPv4
+R1(config-router)# address-family ipv4 unicast 
+! dodanie sieci IPv4
+R1(config-router-af)# area 0 range 192.168.4.0 255.255.255.0 
+R1(config-router-af)# area 0 range 192.168.5.0 255.255.255.0 
+! wyjscie do poprzedniego menu
+R1(config-router-af)#exit
+! wejscie do konfiguracji sieci IPv6
+R1(config-router)# address-family ipv6 unicast
+! dodanie sieci IPv6
+R1(config-router-af)# area 0 range fec1::0/64
+! wyjscie z menu konfiguracji
+R1(config-router-af)#CTRL+C
 \end{lstlisting}
 
 
@@ -171,6 +189,26 @@ R3(config-if)#
 R3#wr
 Building configuration...
 [OK]
+\end{lstlisting}
+
+Konfiguracja protokolu routingu OSPFv3
+\begin{lstlisting}
+! wejscie do menu konfiguracji
+R3#conf t
+! wejscie do menu konfiguracji protokolu ospfv3
+R3(config)#router ospfv3 1 
+! wejscie do konfiguracji sieci IPv4
+R3(config-router)# address-family ipv4 unicast 
+! dodanie sieci IPv4
+R3(config-router-af)# area 0 range 192.168.4.0 255.255.255.0 
+! wyjscie do poprzedniego menu
+R3(config-router-af)#exit
+! wejscie do konfiguracji sieci IPv6
+R3(config-router)# address-family ipv6 unicast
+! dodanie sieci IPv6
+R3(config-router-af)# area 0 range fec0::0/64
+! wyjscie z menu konfiguracji
+R3(config-router-af)#CTRL+C
 \end{lstlisting}
 
 \subsubsection{Router R2}
@@ -247,19 +285,19 @@ R2#wr
 Building configuration...
 [OK]
 \end{lstlisting}
-Uruchomienie protokołu routingu RIP2 
+Uruchomienie protokolu routingu RIP2 
 \begin{lstlisting}
 R2# conf t
-! uruchomienie konfiguracji protokołu RIP
+! uruchomienie konfiguracji protokolu RIP
 R2(config)# router rip
-! dodanie sieci bezpośrednio dołączonych
+! dodanie sieci bezposrednio dolaczonych
 R2config-router)#network 192.168.5.0
 R2(config-router)#network 192.168.1.0
 R2(config-router)#network 192.168.2.0
 R2(config-router)#network 192.168.3.0
-! uruchamiamy RIP2
+! uruchomienie protokolu RIP2
 R2(config-router)#version 2
-! wychodzimy z menu konfiguracji
+! wyjscie z menu konfiguracji
 R2(config-router)#exit
 R2(config)#exit
 \end{lstlisting}
