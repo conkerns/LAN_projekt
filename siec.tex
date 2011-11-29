@@ -120,6 +120,8 @@ R1(config-if)#no ip address
 ! przypisanie adresu IPv6 (brama podsieci)
 R1(config-if)#ipv6 address fec1::1/64 
 ! aktywacja obslugi IPv6 na interfejsie
+R1(config-if)#ipv6 rip enable
+! uruchomienie routingu IPv6
 R1(config-if)#ipv6 enable 
 ! uruchomienie interfejsu
 R1(config-if)#no shutdown 
@@ -245,7 +247,22 @@ R2#wr
 Building configuration...
 [OK]
 \end{lstlisting}
-
+Uruchomienie protokołu routingu RIP2 
+\begin{lstlisting}
+R2# conf t
+! uruchomienie konfiguracji protokołu RIP
+R2(config)# router rip
+! dodanie sieci bezpośrednio dołączonych
+R2config-router)#network 192.168.5.0
+R2(config-router)#network 192.168.1.0
+R2(config-router)#network 192.168.2.0
+R2(config-router)#network 192.168.3.0
+! uruchamiamy RIP2
+R2(config-router)#version 2
+! wychodzimy z menu konfiguracji
+R2(config-router)#exit
+R2(config)#exit
+\end{lstlisting}
 
 \subsection{Konfiguracja switchy}
 Wstępnej konfiguracji poddawany jest tylko switch S2, który obsługuje 3 sieci wirtualne dla hostów do niego podłączonych. Pierwszy etap konfiguracji VLANow odbyl sie podczas uruchamiania podinterfejsów (bram) na routerze R2, po jednym dla każdej sieci wirtualnej.
